@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: image-to-video-server
-    env: node
-    branch: main
-    buildCommand: npm install
-    startCommand: node main.js
-    plan: free
-    autoDeploy: true
