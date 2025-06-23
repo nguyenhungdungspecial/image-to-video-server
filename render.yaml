@@ -1,0 +1,14 @@
+# render.yaml
+services:
+  - type: web
+    name: image-to-video-server
+    runtime: node
+    repo: https://github.com/nguyenhungdungspecial/image-to-video-server
+    branch: main
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: node server.js
+    autoDeploy: true
+
+version: "1"
