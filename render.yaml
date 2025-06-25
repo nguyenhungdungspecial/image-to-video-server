@@ -7,4 +7,4 @@ services:
     plan: free
     region: singapore
     buildCommand: npm install
-    startCommand: node main.js
+    startCommand: node server.js

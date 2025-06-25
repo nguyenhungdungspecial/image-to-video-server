@@ -12,18 +12,17 @@ app.get('/', (req, res) => {
   res.send('✅ Image to Video Server is running.');
 });
 
-app.post('/create-video', upload.array('images', 10), async (req, res) => {
+// ✅ Đổi đường dẫn từ /create-video → /api/upload
+app.post('/api/upload', upload.array('images', 10), async (req, res) => {
   try {
     const timestamp = Date.now();
     const output = `output_${timestamp}.mp4`;
     const inputImages = req.files.map(file => file.path);
-    
     const listPath = `list_${timestamp}.txt`;
     const listContent = inputImages.map(p => `file '${p}'\nduration 1`).join('\n');
     fs.writeFileSync(listPath, listContent);
 
     const cmd = `ffmpeg -f concat -safe 0 -i ${listPath} -vsync vfr -pix_fmt yuv420p ${output}`;
-
     exec(cmd, (error, stdout, stderr) => {
       if (error) {
         console.error('FFmpeg error:', stderr);
