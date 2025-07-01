@@ -1,10 +1,9 @@
 services:
   - type: web
     name: image-to-video-server
-    runtime: node
-    repo: https://github.com/nguyenhungdungspecial/image-to-video-server
-    branch: main
+    env: docker
     plan: free
     region: singapore
-    buildCommand: apt-get update && apt-get install -y ffmpeg && npm install
-    startCommand: node server.js
+    repo: https://github.com/nguyenhungdungspecial/image-to-video-server
+    branch: main
+    dockerfilePath: ./Dockerfile
