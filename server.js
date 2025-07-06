@@ -3,42 +3,51 @@ const multer = require('multer');
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
-const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const PORT = process.env.PORT || 10000;
 
 app.get('/', (req, res) => {
-  res.send('✅ Image to Video Server is running.');
+  res.send('✅ Image to Video Server is running');
 });
 
-// ✅ Đổi đường dẫn từ /create-video → /api/upload
 app.post('/api/upload', upload.array('images', 10), async (req, res) => {
   try {
+    console.log('🔥 Nhận yêu cầu tạo video');
     const timestamp = Date.now();
     const output = `output_${timestamp}.mp4`;
+
     const inputImages = req.files.map(file => file.path);
     const listPath = `list_${timestamp}.txt`;
-    const listContent = inputImages.map(p => `file '${p}'\nduration 1`).join('\n');
+    const listContent = inputImages.map(p => `file '${path.resolve(p)}'`).join('\n');
     fs.writeFileSync(listPath, listContent);
 
     const cmd = `ffmpeg -f concat -safe 0 -i ${listPath} -vsync vfr -pix_fmt yuv420p ${output}`;
     exec(cmd, (error, stdout, stderr) => {
       if (error) {
-        console.error('FFmpeg error:', stderr);
+        console.error('❌ FFmpeg error:', stderr);
         return res.status(500).send('Video creation failed.');
       }
 
-      res.download(output, () => {
-        // Clean up
-        fs.unlinkSync(output);
-        inputImages.forEach(f => fs.unlinkSync(f));
-        fs.unlinkSync(listPath);
-      });
+      const videoBuffer = fs.readFileSync(output);
+      res.setHeader('Content-Type', 'video/mp4');
+      res.send(videoBuffer);
+
+      // Xóa file tạm
+      fs.unlinkSync(listPath);
+      fs.unlinkSync(output);
+      inputImages.forEach(p => fs.unlinkSync(p));
     });
   } catch (err) {
-    console.error('Server error:', err);
-    res.status(500).send('Internal server error.');
+    console.error('❌ Lỗi xử lý:', err);
+    res.status(500).json({ message: 'Lỗi xử lý server.' });
   }
 });
 
